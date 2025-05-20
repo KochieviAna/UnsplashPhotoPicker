@@ -11,7 +11,7 @@ import SwiftUI
 struct UnsplashPhotoPickerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            UnsplashPhotoPickerContentView()
         }
     }
 }
