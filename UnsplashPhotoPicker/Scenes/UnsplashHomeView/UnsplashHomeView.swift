@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UnsplashHomeView: View {
     var body: some View {
-        UnsplashHomeHeatherView()
+        UnsplashHomeHeaherView()
     }
 }
 
