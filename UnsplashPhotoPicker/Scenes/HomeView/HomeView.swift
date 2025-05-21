@@ -1,5 +1,5 @@
 //
-//  UnsplashHomeView.swift
+//  HomeView.swift
 //  UnsplashPhotoPicker
 //
 //  Created by MacBook on 20.05.25.
@@ -7,12 +7,15 @@
 
 import SwiftUI
 
-struct UnsplashHomeView: View {
+struct HomeView: View {
+    
     var body: some View {
-        UnsplashHomeHeaherView()
+        HomeHeaherView()
+        
+        HomeGridView()
     }
 }
 
 #Preview {
-    UnsplashHomeView()
+    HomeView()
 }

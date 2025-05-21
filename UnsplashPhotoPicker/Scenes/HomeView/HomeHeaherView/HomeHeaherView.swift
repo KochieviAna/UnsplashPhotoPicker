@@ -1,5 +1,5 @@
 //
-//  UnsplashHomeHeaherView.swift
+//  HomeHeaherView.swift
 //  UnsplashPhotoPicker
 //
 //  Created by MacBook on 20.05.25.
@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct UnsplashHomeHeaherView: View {
+struct HomeHeaherView: View {
     var body: some View {
         HStack {
-            bookmarkButton
+            unsplashIconButton
             
             Spacer()
             
-            usplashIcon
+            unsplashText
             
             Spacer()
             
@@ -25,25 +25,22 @@ struct UnsplashHomeHeaherView: View {
         .padding(.horizontal, 24)
     }
     
-    private var bookmarkButton: some View {
+    private var unsplashIconButton: some View {
         Button(action: {
-            print("Bookmark tapped")
+            print("Unsplash button tapped")
         }) {
-            Image(systemName: "bookmark")
+            Image("dark_unsplash_icon")
                 .resizable()
                 .foregroundColor(.primaryBlack)
-                .frame(width: 20, height: 30)
-                .padding(.leading, 10)
+                .frame(width: 35, height: 40)
         }
         .background(Color(.systemBackground))
     }
     
-    private var usplashIcon: some View {
-        Image("dark_unsplash_icon")
-            .resizable()
-            .scaledToFit()
-            .background(Color(.systemBackground))
-            .frame(width: 100, height: 100)
+    private var unsplashText: some View {
+        Text("Unsplash")
+            .font(.poppinsMedium(size: 24))
+        
     }
     
     private var downloadsButton: some View {
@@ -53,12 +50,12 @@ struct UnsplashHomeHeaherView: View {
             Image(systemName: "arrow.down.circle")
                 .resizable()
                 .foregroundColor(.primaryBlack)
-                .frame(width: 30, height: 30)
+                .frame(width: 24, height: 24)
         }
         .background(Color(.systemBackground))
     }
 }
 
 #Preview {
-    UnsplashHomeHeaherView()
+    HomeHeaherView()
 }

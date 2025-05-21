@@ -1,18 +1,18 @@
 //
-//  UnsplashImageDetailsView.swift
+//  ProfileView.swift
 //  UnsplashPhotoPicker
 //
-//  Created by MacBook on 20.05.25.
+//  Created by MacBook on 21.05.25.
 //
 
 import SwiftUI
 
-struct UnsplashImageDetailsView: View {
+struct ProfileView: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    UnsplashImageDetailsView()
+    ProfileView()
 }
