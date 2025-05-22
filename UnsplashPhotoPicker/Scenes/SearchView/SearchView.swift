@@ -33,12 +33,13 @@ struct SearchView: View {
             adaptiveGrid
         }
         .searchable(text: $searchText, prompt: "Search photos, collections, users")
+        .scrollDismissesKeyboard(.interactively)
     }
     
     private var categoryGrid: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Browse by Category")
-                .font(.headline)
+                .font(.poppinsMedium(size: 16))
                 .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -74,7 +75,7 @@ struct SearchView: View {
                         .foregroundColor(.gray)
                     
                     Text(name)
-                        .font(.caption)
+                        .font(.poppinsRegular(size: 12))
                         .foregroundColor(.primary)
                 }
             )
@@ -84,7 +85,7 @@ struct SearchView: View {
     private var adaptiveGrid: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Discover")
-                .font(.headline)
+                .font(.poppinsMedium(size: 16))
                 .padding(.horizontal)
             
             HStack(alignment: .top, spacing: 2) {
@@ -129,4 +130,5 @@ struct PlaceholderImageView: View {
 
 #Preview {
     SearchView()
+        .environmentObject(UnsplashPhotoPickerAppSettings())
 }

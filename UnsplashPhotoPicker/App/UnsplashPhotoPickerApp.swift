@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct UnsplashPhotoPickerApp: App {
+    @StateObject private var appSettings = UnsplashPhotoPickerAppSettings()
+    
     var body: some Scene {
         WindowGroup {
             PhotoPickerContentView()
+                .environmentObject(appSettings)
+                .preferredColorScheme(appSettings.isDarkMode ? .dark : .light)
         }
     }
 }

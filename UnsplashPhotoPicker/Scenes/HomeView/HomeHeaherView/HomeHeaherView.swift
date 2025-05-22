@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct HomeHeaherView: View {
+    @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
+    
     var body: some View {
         HStack {
             unsplashIconButton
@@ -29,9 +31,8 @@ struct HomeHeaherView: View {
         Button(action: {
             print("Unsplash button tapped")
         }) {
-            Image("dark_unsplash_icon")
+            Image(appSettings.isDarkMode ? "light_unsplash_icon" : "dark_unsplash_icon")
                 .resizable()
-                .foregroundColor(.primaryBlack)
                 .frame(width: 35, height: 40)
         }
         .background(Color(.systemBackground))
@@ -40,7 +41,6 @@ struct HomeHeaherView: View {
     private var unsplashText: some View {
         Text("Unsplash")
             .font(.poppinsMedium(size: 24))
-        
     }
     
     private var downloadsButton: some View {
@@ -58,4 +58,6 @@ struct HomeHeaherView: View {
 
 #Preview {
     HomeHeaherView()
+        .preferredColorScheme(.dark)
+        .environmentObject(UnsplashPhotoPickerAppSettings())
 }
