@@ -19,4 +19,8 @@ extension Font {
     static func poppinsMedium(size: CGFloat) -> Font {
         return Font.custom("Poppins-Medium", size: size)
     }
+    
+    static func poppinsBold(size: CGFloat) -> Font {
+        return Font.custom("Poppins-Bold", size: size)
+    }
 }

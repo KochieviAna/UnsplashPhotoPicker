@@ -1,0 +1,29 @@
+//
+//  Photo.swift
+//  UnsplashPhotoPicker
+//
+//  Created by MacBook on 23.05.25.
+//
+
+import Foundation
+
+struct Photo: Codable, Identifiable, Equatable {
+    let id: String
+    let width: Int
+    let height: Int
+    let user: User
+    let urls: URLs
+    
+    struct User: Codable, Equatable {
+        let username: String
+        let name: String
+    }
+    
+    struct URLs: Codable, Equatable {
+        let regular: String
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, width, height, user, urls
+    }
+}

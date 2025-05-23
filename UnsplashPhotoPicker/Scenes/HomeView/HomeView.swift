@@ -8,127 +8,171 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var selectedCategory: String = "All"
-    @State private var buttonFrames: [CGRect] = Array(repeating: .zero, count: 8)
-    private let categories = ["All", "Nature", "People", "Architecture", "Animals", "Food", "Travel", "Fashion"]
+    @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     
-    let allImages = (1...20).map { _ in CGFloat.random(in: 150...300) }
-    let natureImages = (1...15).map { _ in CGFloat.random(in: 200...350) }
-    let peopleImages = (1...12).map { _ in CGFloat.random(in: 180...320) }
+    @State private var photos: [Photo] = []
+    @State private var currentPage = 1
+    @State private var isLoadingPage = false
+    @State private var hasMorePages = true
+    @State private var loadFailed = false
+    @State private var failedPhotoIDs: Set<String> = []
     
+    private let perPage = 20
     private let columns = [GridItem(.flexible())]
-    
-    var currentImages: [CGFloat] {
-        switch selectedCategory {
-        case "All": return allImages
-        case "Nature": return natureImages
-        case "People": return peopleImages
-        default: return allImages
-        }
-    }
     
     var body: some View {
         VStack(spacing: 0) {
             HomeHeaherView()
             homeGridView
         }
+        .onAppear(perform: loadNextPage)
     }
     
     private var homeGridView: some View {
-        VStack(spacing: 0) {
-            categoryPicker
-            
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 2) {
-                    ForEach(currentImages.indices, id: \.self) { index in
-                        NavigationLink {
-                            ImageDetailsView(height: currentImages[index])
-                        } label: {
-                            PlaceholderImageView(height: currentImages[index])
-                        }
+        Group {
+            if loadFailed {
+                VStack(spacing: 12) {
+                    Text("Failed to load photos.")
+                        .foregroundColor(.primaryGrey)
+                        .font(.poppinsMedium(size: 20))
+                    Button(action: {
+                        loadNextPage()
+                    }) {
+                        Text("Retry")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.primaryGrey)
+                            .foregroundColor(.white)
+                            .font(.poppinsMedium(size: 20))
                     }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal, 5)
-            }
-        }
-    }
-    
-    private var categoryPicker: some View {
-        VStack(spacing: 0) {
-            GeometryReader { geometry in
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 20) {
-                            ForEach(Array(categories.enumerated()), id: \.element) { index, category in
-                                categoryButton(category: category, index: index)
-                                    .background(
-                                        GeometryReader { buttonGeometry in
-                                            Color.clear
-                                                .preference(
-                                                    key: ButtonFramesPreferenceKey.self,
-                                                    value: [index: buttonGeometry.frame(in: .global)]
-                                                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 2) {
+                        ForEach(photos.filter { !failedPhotoIDs.contains($0.id) }) { photo in
+                            NavigationLink {
+                                ImageDetailsView(height: CGFloat(photo.height))
+                            } label: {
+                                photoCell(photo)
+                                    .onAppear {
+                                        if photo == photos.last && hasMorePages && !isLoadingPage {
+                                            loadNextPage()
                                         }
-                                    )
+                                    }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .onPreferenceChange(ButtonFramesPreferenceKey.self) { frames in
-                            for (index, frame) in frames {
-                                buttonFrames[index] = frame
+                        
+                        if isLoadingPage {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        } else if hasMorePages {
+                            Button(action: {
+                                loadNextPage()
+                            }) {
+                                Text("Load More")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.primaryGrey)
+                                    .font(.poppinsMedium(size: 20))
+                                    .foregroundColor(.white)
                             }
+                            .padding()
+                        } else {
+                            Text("No more photos")
+                                .foregroundColor(.primaryGrey)
+                                .font(.poppinsMedium(size: 20))
+                                .padding()
                         }
                     }
-                    .frame(height: 50)
-                    .onChange(of: selectedCategory) {
-                        withAnimation {
-                            proxy.scrollTo(selectedCategory, anchor: .center)
-                        }
-                    }
+                    .padding(.horizontal, 5)
+                }
+                .refreshable {
+                    await refreshPhotos()
                 }
             }
-            .frame(height: 50)
+        }
+    }
+    
+    private func photoCell(_ photo: Photo) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            AsyncImage(url: URL(string: photo.urls.regular)) { phase in
+                switch phase {
+                case .empty:
+                    Color.primaryGrey.opacity(0.3)
+                        .frame(height: 200)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                    
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                    
+                case .failure(_):
+                    Color.clear
+                        .frame(height: 0)
+                        .onAppear {
+                            failedPhotoIDs.insert(photo.id)
+                        }
+                    
+                @unknown default:
+                    EmptyView()
+                }
+            }
+            .clipped()
             
-            ZStack(alignment: .leading) {
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(.primaryGrey.opacity(0.3))
-                
-                if let selectedIndex = categories.firstIndex(of: selectedCategory),
-                   selectedIndex < buttonFrames.count {
-                    Rectangle()
-                        .frame(width: buttonFrames[selectedIndex].width, height: 2)
-                        .foregroundColor(.primaryBlack)
-                        .offset(x: buttonFrames[selectedIndex].minX - 16)
-                        .animation(.easeInOut(duration: 0.3), value: selectedCategory)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(photo.user.name)
+                    .font(.poppinsBold(size: 16))
+            }
+            .padding(6)
+            .foregroundColor(.white)
+            .padding([.leading, .bottom], 8)
+        }
+    }
+    
+    private func loadNextPage() {
+        guard !isLoadingPage && hasMorePages else { return }
+        isLoadingPage = true
+        loadFailed = false
+        
+        Task {
+            do {
+                let newPhotos = try await appSettings.unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
+                if newPhotos.isEmpty {
+                    hasMorePages = false
+                } else {
+                    photos.append(contentsOf: newPhotos)
+                    currentPage += 1
                 }
+            } catch {
+                print("Failed to load page \(currentPage): \(error)")
+                loadFailed = true
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
+            isLoadingPage = false
         }
     }
     
-    private func categoryButton(category: String, index: Int) -> some View {
-        Button {
-            withAnimation {
-                selectedCategory = category
-            }
-        } label: {
-            Text(category)
-                .font(.poppinsRegular(size: 16))
-                .fontWeight(selectedCategory == category ? .bold : .regular)
-                .foregroundColor(selectedCategory == category ? .primaryBlack : .primaryGrey)
-                .padding(.vertical, 8)
-                .id(category)
+    private func refreshPhotos() async {
+        currentPage = 1
+        hasMorePages = true
+        isLoadingPage = true
+        loadFailed = false
+        failedPhotoIDs = []
+        
+        do {
+            let newPhotos = try await appSettings.unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
+            photos = newPhotos
+            currentPage += 1
+        } catch {
+            print("Failed to refresh photos: \(error)")
+            loadFailed = true
         }
-    }
-}
-
-struct ButtonFramesPreferenceKey: PreferenceKey {
-    static var defaultValue: [Int: CGRect] = [:]
-    
-    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) {
-        value.merge(nextValue(), uniquingKeysWith: { $1 })
+        
+        isLoadingPage = false
     }
 }
 
