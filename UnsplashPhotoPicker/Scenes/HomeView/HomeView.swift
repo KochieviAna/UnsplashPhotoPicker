@@ -9,34 +9,34 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
+    @StateObject private var viewModel: HomeViewModel
     
-    @State private var photos: [Photo] = []
-    @State private var currentPage = 1
-    @State private var isLoadingPage = false
-    @State private var hasMorePages = true
-    @State private var loadFailed = false
-    @State private var failedPhotoIDs: Set<String> = []
+    init() {
+        _viewModel = StateObject(wrappedValue: HomeViewModel(unsplashService: UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")))
+    }
     
-    private let perPage = 20
     private let columns = [GridItem(.flexible())]
     
     var body: some View {
         VStack(spacing: 0) {
             HomeHeaherView()
+            
             homeGridView
         }
-        .onAppear(perform: loadNextPage)
+        .onAppear {
+            viewModel.loadNextPage()
+        }
     }
     
     private var homeGridView: some View {
         Group {
-            if loadFailed {
+            if viewModel.loadFailed {
                 VStack(spacing: 12) {
                     Text("Failed to load photos.")
                         .foregroundColor(.primaryGrey)
                         .font(.poppinsMedium(size: 20))
                     Button(action: {
-                        loadNextPage()
+                        viewModel.loadNextPage()
                     }) {
                         Text("Retry")
                             .padding()
@@ -51,26 +51,26 @@ struct HomeView: View {
             } else {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 2) {
-                        ForEach(photos.filter { !failedPhotoIDs.contains($0.id) }) { photo in
+                        ForEach(viewModel.photos.filter { !viewModel.failedPhotoIDs.contains($0.id) }) { photo in
                             NavigationLink {
                                 ImageDetailsView(height: CGFloat(photo.height))
                             } label: {
                                 photoCell(photo)
                                     .onAppear {
-                                        if photo == photos.last && hasMorePages && !isLoadingPage {
-                                            loadNextPage()
+                                        if photo == viewModel.photos.last && viewModel.hasMorePages && !viewModel.isLoadingPage {
+                                            viewModel.loadNextPage()
                                         }
                                     }
                             }
                         }
                         
-                        if isLoadingPage {
+                        if viewModel.isLoadingPage {
                             ProgressView()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                        } else if hasMorePages {
+                        } else if viewModel.hasMorePages {
                             Button(action: {
-                                loadNextPage()
+                                viewModel.loadNextPage()
                             }) {
                                 Text("Load More")
                                     .frame(maxWidth: .infinity)
@@ -90,7 +90,7 @@ struct HomeView: View {
                     .padding(.horizontal, 5)
                 }
                 .refreshable {
-                    await refreshPhotos()
+                    await viewModel.refreshPhotos()
                 }
             }
         }
@@ -115,7 +115,7 @@ struct HomeView: View {
                     Color.clear
                         .frame(height: 0)
                         .onAppear {
-                            failedPhotoIDs.insert(photo.id)
+                            viewModel.markPhotoAsFailed(photo.id)
                         }
                     
                 @unknown default:
@@ -132,47 +132,6 @@ struct HomeView: View {
             .foregroundColor(.white)
             .padding([.leading, .bottom], 8)
         }
-    }
-    
-    private func loadNextPage() {
-        guard !isLoadingPage && hasMorePages else { return }
-        isLoadingPage = true
-        loadFailed = false
-        
-        Task {
-            do {
-                let newPhotos = try await appSettings.unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
-                if newPhotos.isEmpty {
-                    hasMorePages = false
-                } else {
-                    photos.append(contentsOf: newPhotos)
-                    currentPage += 1
-                }
-            } catch {
-                print("Failed to load page \(currentPage): \(error)")
-                loadFailed = true
-            }
-            isLoadingPage = false
-        }
-    }
-    
-    private func refreshPhotos() async {
-        currentPage = 1
-        hasMorePages = true
-        isLoadingPage = true
-        loadFailed = false
-        failedPhotoIDs = []
-        
-        do {
-            let newPhotos = try await appSettings.unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
-            photos = newPhotos
-            currentPage += 1
-        } catch {
-            print("Failed to refresh photos: \(error)")
-            loadFailed = true
-        }
-        
-        isLoadingPage = false
     }
 }
 
