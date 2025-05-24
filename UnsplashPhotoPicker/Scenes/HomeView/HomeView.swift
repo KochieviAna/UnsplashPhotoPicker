@@ -53,16 +53,12 @@ struct HomeView: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 2) {
                         ForEach(viewModel.photos.filter { !viewModel.failedPhotoIDs.contains($0.id) }) { photo in
-                            NavigationLink {
-                                ImageDetailsView(height: CGFloat(photo.height))
-                            } label: {
-                                photoCell(photo)
-                                    .onAppear {
-                                        if photo == viewModel.photos.last && viewModel.hasMorePages && !viewModel.isLoadingPage {
-                                            viewModel.loadNextPage()
-                                        }
+                            photoCell(photo)
+                                .onAppear {
+                                    if photo == viewModel.photos.last && viewModel.hasMorePages && !viewModel.isLoadingPage {
+                                        viewModel.loadNextPage()
                                     }
-                            }
+                                }
                         }
                         
                         if viewModel.isLoadingPage {
@@ -123,9 +119,9 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(photo.user.name)
                     .font(.poppinsBold(size: 16))
+                    .shadow(radius: 4)
+                    .foregroundColor(.white)
             }
-            .padding(6)
-            .foregroundColor(.white)
             .padding([.leading, .bottom], 8)
         }
     }

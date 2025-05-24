@@ -20,7 +20,11 @@ struct Photo: Codable, Identifiable, Equatable {
     }
     
     struct URLs: Codable, Equatable {
+        let raw: String
+        let full: String
         let regular: String
+        let small: String
+        let thumb: String
     }
     
     enum CodingKeys: String, CodingKey {
