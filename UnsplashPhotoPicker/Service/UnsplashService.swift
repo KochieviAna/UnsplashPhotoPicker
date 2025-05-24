@@ -9,7 +9,7 @@ import Foundation
 
 final class UnsplashService: UnsplashServiceProtocol {
     private let baseURL = "https://api.unsplash.com"
-    private let accessKey: String
+    let accessKey: String
     
     init(accessKey: String) {
         self.accessKey = accessKey
