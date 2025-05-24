@@ -11,20 +11,22 @@ struct HomeView: View {
     @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     @StateObject private var viewModel: HomeViewModel
     
-    init() {
-        _viewModel = StateObject(wrappedValue: HomeViewModel(unsplashService: UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")))
-    }
-    
     private let columns = [GridItem(.flexible())]
+    
+    init() {
+        _viewModel = StateObject(wrappedValue: HomeViewModel(unsplashService: UnsplashService(accessKey: "")))
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             HomeHeaherView()
-            
             homeGridView
         }
         .onAppear {
-            viewModel.loadNextPage()
+            if viewModel.unsplashServiceIsPlaceholder {
+                viewModel.setUnsplashService(appSettings.unsplashService)
+                viewModel.loadNextPage()
+            }
         }
     }
     
@@ -35,16 +37,15 @@ struct HomeView: View {
                     Text("Failed to load photos.")
                         .foregroundColor(.primaryGrey)
                         .font(.poppinsMedium(size: 20))
-                    Button(action: {
+                    
+                    Button("Retry") {
                         viewModel.loadNextPage()
-                    }) {
-                        Text("Retry")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.primaryGrey)
-                            .foregroundColor(.white)
-                            .font(.poppinsMedium(size: 20))
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.primaryGrey)
+                    .foregroundColor(.white)
+                    .font(.poppinsMedium(size: 20))
                     .padding(.horizontal)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,16 +70,14 @@ struct HomeView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding()
                         } else if viewModel.hasMorePages {
-                            Button(action: {
+                            Button("Load More") {
                                 viewModel.loadNextPage()
-                            }) {
-                                Text("Load More")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.primaryGrey)
-                                    .font(.poppinsMedium(size: 20))
-                                    .foregroundColor(.white)
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.primaryGrey)
+                            .foregroundColor(.white)
+                            .font(.poppinsMedium(size: 20))
                             .padding()
                         } else {
                             Text("No more photos")
@@ -105,19 +104,16 @@ struct HomeView: View {
                         .frame(height: 200)
                         .redacted(reason: .placeholder)
                         .shimmering()
-                    
                 case .success(let image):
                     image
                         .resizable()
                         .scaledToFit()
-                    
                 case .failure(_):
                     Color.clear
                         .frame(height: 0)
                         .onAppear {
                             viewModel.markPhotoAsFailed(photo.id)
                         }
-                    
                 @unknown default:
                     EmptyView()
                 }

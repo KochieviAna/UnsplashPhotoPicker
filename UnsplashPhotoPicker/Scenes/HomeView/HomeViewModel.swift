@@ -7,21 +7,35 @@
 
 import Foundation
 import SwiftUI
+import Observation
 
 @MainActor
+@Observable
 final class HomeViewModel: ObservableObject {
-    @Published var photos: [Photo] = []
-    @Published var currentPage = 1
-    @Published var isLoadingPage = false
-    @Published var hasMorePages = true
-    @Published var loadFailed = false
-    @Published var failedPhotoIDs: Set<String> = []
+    private(set) var unsplashService: UnsplashServiceProtocol
+    private var serviceWasSet = false
+    
+    var photos: [Photo] = []
+    var currentPage = 1
+    var isLoadingPage = false
+    var hasMorePages = true
+    var loadFailed = false
+    var failedPhotoIDs: Set<String> = []
     
     private let perPage = 20
-    private let unsplashService: UnsplashServiceProtocol
     
     init(unsplashService: UnsplashServiceProtocol) {
         self.unsplashService = unsplashService
+    }
+    
+    var unsplashServiceIsPlaceholder: Bool {
+        (unsplashService as? UnsplashService)?.accessKey.isEmpty == true
+    }
+    
+    func setUnsplashService(_ service: UnsplashServiceProtocol) {
+        guard !serviceWasSet else { return }
+        self.unsplashService = service
+        self.serviceWasSet = true
     }
     
     func loadNextPage() {
