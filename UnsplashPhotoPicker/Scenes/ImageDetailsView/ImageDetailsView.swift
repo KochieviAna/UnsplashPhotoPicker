@@ -12,6 +12,8 @@ struct ImageDetailsView: View {
     @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     @Environment(\.dismiss) private var dismiss
     
+    @State private var imageScale: CGFloat = 1.0
+    
     let photo: Photo
     
     @State private var showSaveSuccess = false
@@ -24,12 +26,27 @@ struct ImageDetailsView: View {
             AsyncImage(url: URL(string: photo.urls.regular)) { phase in
                 switch phase {
                 case .empty:
-                    ProgressView()
+                    Color.primaryGrey.opacity(0.3)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+
                 case .success(let image):
                     image
                         .resizable()
                         .scaledToFit()
+                        .scaleEffect(imageScale)
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    imageScale = min(max(value, 1.0), 4.0)
+                                }
+                                .onEnded { _ in
+                                    withAnimation(.spring()) {
+                                        imageScale = 1.0
+                                    }
+                                }
+                        )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .failure:
                     Color.primaryGrey.opacity(0.3)
@@ -89,14 +106,14 @@ struct ImageDetailsView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(.white)
+                        .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
                     
                     Text("Photo saved")
                         .font(.poppinsMedium(size: 18))
-                        .foregroundColor(.white)
+                        .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
                 }
                 .padding(30)
-                .background(Color.black.opacity(0.75))
+                .background(appSettings.isDarkMode ? .primaryBlack.opacity(0.75) : .white.opacity(0.75))
                 .cornerRadius(16)
                 .transition(.opacity)
                 .zIndex(1)
