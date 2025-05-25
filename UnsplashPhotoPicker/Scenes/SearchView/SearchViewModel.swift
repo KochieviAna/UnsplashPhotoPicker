@@ -13,7 +13,6 @@ import SwiftUI
 final class SearchViewModel: ObservableObject {
     private var unsplashService: UnsplashServiceProtocol
     var shouldShowError = false
-    
     var searchText: String = "" {
         didSet {
             debounceSearch()
@@ -56,7 +55,7 @@ final class SearchViewModel: ObservableObject {
     private func debounceSearch() {
         searchTask?.cancel()
         searchTask = Task {
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            try? await Task.sleep(nanoseconds: 500_000_000)
             
             if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 await loadInitialPhotos()

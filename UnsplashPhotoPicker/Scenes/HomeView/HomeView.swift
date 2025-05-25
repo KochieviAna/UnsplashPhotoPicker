@@ -18,11 +18,13 @@ struct HomeView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            HomeHeaherView()
-            homeGridView
+        NavigationStack {
+            VStack(spacing: 0) {
+                HomeHeaherView()
+                homeGridView
+            }
+            .onAppear(perform: handleOnAppear)
         }
-        .onAppear(perform: handleOnAppear)
     }
     
     private var homeGridView: some View {
@@ -94,38 +96,41 @@ struct HomeView: View {
     }
     
     private func photoCell(_ photo: Photo) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: URL(string: photo.urls.regular)) { phase in
-                switch phase {
-                case .empty:
-                    Color.primaryGrey.opacity(0.3)
-                        .frame(height: 200)
-                        .redacted(reason: .placeholder)
-                        .shimmering()
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFit()
-                case .failure(_):
-                    Color.clear
-                        .frame(height: 0)
-                        .onAppear {
-                            viewModel.markPhotoAsFailed(photo.id)
-                        }
-                @unknown default:
-                    EmptyView()
+        NavigationLink(destination: ImageDetailsView(photo: photo)) {
+            ZStack(alignment: .bottomLeading) {
+                AsyncImage(url: URL(string: photo.urls.regular)) { phase in
+                    switch phase {
+                    case .empty:
+                        Color.primaryGrey.opacity(0.3)
+                            .frame(height: 200)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    case .failure(_):
+                        Color.clear
+                            .frame(height: 0)
+                            .onAppear {
+                                viewModel.markPhotoAsFailed(photo.id)
+                            }
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
+                .clipped()
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(photo.user.name)
+                        .font(.poppinsBold(size: 16))
+                        .shadow(radius: 4)
+                        .foregroundColor(.white)
+                }
+                .padding([.leading, .bottom], 8)
             }
-            .clipped()
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(photo.user.name)
-                    .font(.poppinsBold(size: 16))
-                    .shadow(radius: 4)
-                    .foregroundColor(.white)
-            }
-            .padding([.leading, .bottom], 8)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

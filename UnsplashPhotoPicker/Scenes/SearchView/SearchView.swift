@@ -24,7 +24,8 @@ struct SearchView: View {
                     searchGridView
                 }
             }
-            .searchable(text: $viewModel.searchText, prompt: "Search photos, collections, users")
+            .searchable(text: $viewModel.searchText,
+                        prompt: "Search photos, users...")
             .scrollDismissesKeyboard(.interactively)
             .onAppear(perform: handleOnAppear)
         }
@@ -132,36 +133,42 @@ struct SearchView: View {
     }
     
     private func photoCell(_ photo: Photo) -> some View {
-        let aspectRatio = CGFloat(photo.height) / CGFloat(photo.width)
-        let height = 180 * aspectRatio
-        
-        return ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: URL(string: photo.urls.small)) { phase in
-                switch phase {
-                case .empty:
-                    Color.primaryGrey.opacity(0.2)
-                        .frame(height: height)
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: height)
-                        .clipped()
-                case .failure:
-                    Color.primaryGrey.opacity(0.2)
-                        .frame(height: height)
-                        .overlay(Text("Load failed").foregroundColor(.primaryGrey))
-                @unknown default:
-                    EmptyView()
-                }
-            }
+        NavigationLink(destination: {
+            ImageDetailsView(photo: photo)
+                .navigationBarHidden(true)
+        }) {
+            let aspectRatio = CGFloat(photo.height) / CGFloat(photo.width)
+            let height = 180 * aspectRatio
             
-            Text(photo.user.name)
-                .font(.poppinsBold(size: 14))
-                .shadow(radius: 4)
-                .foregroundColor(.white)
-                .padding(.horizontal, 4)
+            ZStack(alignment: .bottomLeading) {
+                AsyncImage(url: URL(string: photo.urls.small)) { phase in
+                    switch phase {
+                    case .empty:
+                        Color.primaryGrey.opacity(0.2)
+                            .frame(height: height)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: height)
+                            .clipped()
+                    case .failure:
+                        Color.primaryGrey.opacity(0.2)
+                            .frame(height: height)
+                            .overlay(Text("Load failed").foregroundColor(.primaryGrey))
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                
+                Text(photo.user.name)
+                    .font(.poppinsBold(size: 14))
+                    .shadow(radius: 4)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 4)
+            }
         }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func shimmeringPlaceholderColumn() -> some View {
