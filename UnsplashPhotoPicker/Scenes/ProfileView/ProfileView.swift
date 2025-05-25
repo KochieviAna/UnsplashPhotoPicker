@@ -53,7 +53,6 @@ struct ProfileView: View {
         VStack(spacing: 8) {
             profilePictureImage
             nameText
-            usernameText
         }
     }
     
@@ -75,12 +74,6 @@ struct ProfileView: View {
     private var nameText: some View {
         Text("Ana Kochievi")
             .font(.poppinsMedium(size: 20))
-            .foregroundStyle(.primaryBlack)
-    }
-    
-    private var usernameText: some View {
-        Text("ana.kochievi")
-            .font(.poppinsLight(size: 18))
             .foregroundStyle(.primaryBlack)
     }
     
