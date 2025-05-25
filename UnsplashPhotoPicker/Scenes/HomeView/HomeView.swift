@@ -22,12 +22,7 @@ struct HomeView: View {
             HomeHeaherView()
             homeGridView
         }
-        .onAppear {
-            if viewModel.unsplashServiceIsPlaceholder {
-                viewModel.setUnsplashService(appSettings.unsplashService)
-                viewModel.loadNextPage()
-            }
-        }
+        .onAppear(perform: handleOnAppear)
     }
     
     private var homeGridView: some View {
@@ -88,6 +83,13 @@ struct HomeView: View {
                     await viewModel.refreshPhotos()
                 }
             }
+        }
+    }
+    
+    private func handleOnAppear() {
+        if viewModel.unsplashServiceIsPlaceholder {
+            viewModel.setUnsplashService(appSettings.unsplashService)
+            viewModel.loadNextPage()
         }
     }
     
