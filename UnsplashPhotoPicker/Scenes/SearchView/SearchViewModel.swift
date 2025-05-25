@@ -71,12 +71,12 @@ final class SearchViewModel: ObservableObject {
             hasMorePages = true
             shouldShowError = false
         }
-
+        
         guard !searchText.isEmpty, !isLoading, hasMorePages else { return }
-
+        
         isLoading = true
         loadFailed = false
-
+        
         do {
             let results = try await unsplashService.searchPhotos(query: searchText, page: currentPage, perPage: perPage)
             if reset {
@@ -84,17 +84,17 @@ final class SearchViewModel: ObservableObject {
             } else {
                 photos += results
             }
-
+            
             if results.isEmpty {
                 hasMorePages = false
             } else {
                 currentPage += 1
             }
-
+            
         } catch {
             print("Search failed: \(error)")
             loadFailed = true
-
+            
             Task {
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                 if loadFailed && photos.isEmpty {
@@ -102,10 +102,10 @@ final class SearchViewModel: ObservableObject {
                 }
             }
         }
-
+        
         isLoading = false
     }
-
+    
     func loadMoreIfNeeded(currentPhoto: Photo) {
         guard !isLoading, hasMorePages, !loadFailed else { return }
         if let last = photos.last, last.id == currentPhoto.id {

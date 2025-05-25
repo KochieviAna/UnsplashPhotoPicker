@@ -12,14 +12,14 @@ struct ImageDetailsView: View {
     @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     @Environment(\.dismiss) private var dismiss
     
-    @State private var imageScale: CGFloat = 1.0
-    
     let photo: Photo
     
-    @State private var showSaveSuccess = false
-    @State private var showSaveErrorAlert = false
-    @State private var saveErrorMessage = ""
-    @State private var isBookmarked = false
+    @State private var viewModel: ImageDetailsViewModel
+    
+    init(photo: Photo) {
+        self.photo = photo
+        _viewModel = State(wrappedValue: ImageDetailsViewModel(unsplashService: UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")))
+    }
     
     var body: some View {
         ZStack {
@@ -35,22 +35,16 @@ struct ImageDetailsView: View {
                     image
                         .resizable()
                         .scaledToFit()
-                        .scaleEffect(imageScale)
+                        .scaleEffect(viewModel.imageScale)
                         .gesture(
                             MagnificationGesture()
-                                .onChanged { value in
-                                    imageScale = min(max(value, 1.0), 4.0)
-                                }
-                                .onEnded { _ in
-                                    withAnimation(.spring()) {
-                                        imageScale = 1.0
-                                    }
-                                }
+                                .onChanged { viewModel.updateImageScale(to: $0) }
+                                .onEnded { _ in viewModel.resetImageScaleWithAnimation() }
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
                 case .failure:
                     Color.primaryGrey.opacity(0.3)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 @unknown default:
                     EmptyView()
                 }
@@ -59,9 +53,7 @@ struct ImageDetailsView: View {
             
             VStack {
                 HStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
+                    Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
@@ -70,16 +62,14 @@ struct ImageDetailsView: View {
                     Spacer()
                     
                     HStack(spacing: 12) {
-                        Button(action: {
-                            isBookmarked.toggle()
-                        }) {
-                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                        Button(action: { viewModel.toggleBookmark() }) {
+                            Image(systemName: viewModel.isBookmarked ? "bookmark.fill" : "bookmark")
                                 .font(.system(size: 24))
                                 .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
                         }
                         
                         Button(action: {
-                            downloadImageToPhotoLibrary(for: photo)
+                            viewModel.downloadImageToPhotoLibrary(for: photo)
                         }) {
                             Image(systemName: "arrow.down.to.line")
                                 .font(.system(size: 24))
@@ -87,7 +77,6 @@ struct ImageDetailsView: View {
                         }
                     }
                 }
-                .frame(maxWidth: .infinity)
                 .padding(.horizontal)
                 .padding(.top, 20)
                 
@@ -102,7 +91,7 @@ struct ImageDetailsView: View {
                 .padding()
             }
             
-            if showSaveSuccess {
+            if viewModel.showSaveSuccess {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 48))
@@ -121,48 +110,10 @@ struct ImageDetailsView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
-        .alert("Error Saving Photo", isPresented: $showSaveErrorAlert) {
+        .alert("Error Saving Photo", isPresented: $viewModel.showSaveErrorAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text(saveErrorMessage)
-        }
-    }
-    
-    private func downloadImageToPhotoLibrary(for photo: Photo) {
-        Task {
-            do {
-                let downloadURL = try await appSettings.unsplashService.trackDownload(for: photo)
-                
-                let (data, _) = try await URLSession.shared.data(from: downloadURL)
-                guard let image = UIImage(data: data) else {
-                    throw NSError(domain: "Invalid image data", code: -1)
-                }
-                
-                let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-                guard status == .authorized || status == .limited else {
-                    throw NSError(domain: "Photo Library access denied", code: -1)
-                }
-                
-                try await PHPhotoLibrary.shared().performChanges {
-                    PHAssetChangeRequest.creationRequestForAsset(from: image)
-                }
-                
-                await MainActor.run {
-                    withAnimation { showSaveSuccess = true }
-                }
-                
-                try await Task.sleep(nanoseconds: 2_500_000_000)
-                
-                await MainActor.run {
-                    withAnimation { showSaveSuccess = false }
-                }
-                
-            } catch {
-                await MainActor.run {
-                    saveErrorMessage = error.localizedDescription
-                    showSaveErrorAlert = true
-                }
-            }
+            Text(viewModel.saveErrorMessage)
         }
     }
 }
