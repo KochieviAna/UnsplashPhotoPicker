@@ -37,5 +37,5 @@ struct PhotoPickerContentView: View {
 
 #Preview {
     PhotoPickerContentView()
-        .environmentObject(UnsplashPhotoPickerAppSettings())
+        .environmentObject(UnsplashPhotoPickerAppSettings( ))
 }

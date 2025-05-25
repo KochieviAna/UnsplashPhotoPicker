@@ -66,4 +66,33 @@ final class UnsplashService: UnsplashServiceProtocol {
         let searchResponse = try decoder.decode(SearchResponse.self, from: data)
         return searchResponse.results
     }
+    
+    func trackDownload(for photo: Photo) async throws -> URL {
+        guard let url = URL(string: photo.links.downloadLocation) else {
+            throw URLError(.badURL)
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Client-ID \(accessKey)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200..<300 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+        
+        struct DownloadResponse: Decodable {
+            let url: String
+        }
+        
+        let decoded = try JSONDecoder().decode(DownloadResponse.self, from: data)
+        
+        guard let downloadURL = URL(string: decoded.url) else {
+            throw URLError(.badURL)
+        }
+        
+        return downloadURL
+    }
+    
 }

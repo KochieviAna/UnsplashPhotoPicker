@@ -13,12 +13,13 @@ struct Photo: Codable, Identifiable, Equatable {
     let height: Int
     let user: User
     let urls: URLs
-    
+    let links: Links
+
     struct User: Codable, Equatable {
         let username: String
         let name: String
     }
-    
+
     struct URLs: Codable, Equatable {
         let raw: String
         let full: String
@@ -27,7 +28,7 @@ struct Photo: Codable, Identifiable, Equatable {
         let thumb: String
     }
     
-    enum CodingKeys: String, CodingKey {
-        case id, width, height, user, urls
+    struct Links: Codable, Equatable {
+        let downloadLocation: String
     }
 }

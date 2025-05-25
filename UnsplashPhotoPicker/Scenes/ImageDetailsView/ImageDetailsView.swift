@@ -30,7 +30,7 @@ struct ImageDetailsView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .redacted(reason: .placeholder)
                         .shimmering()
-
+                    
                 case .success(let image):
                     image
                         .resizable()
@@ -79,7 +79,7 @@ struct ImageDetailsView: View {
                         }
                         
                         Button(action: {
-                            downloadImageToPhotoLibrary(from: photo.urls.full)
+                            downloadImageToPhotoLibrary(for: photo)
                         }) {
                             Image(systemName: "arrow.down.to.line")
                                 .font(.system(size: 24))
@@ -128,14 +128,13 @@ struct ImageDetailsView: View {
         }
     }
     
-    private func downloadImageToPhotoLibrary(from urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        
+    private func downloadImageToPhotoLibrary(for photo: Photo) {
         Task {
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let downloadURL = try await appSettings.unsplashService.trackDownload(for: photo)
+                
+                let (data, _) = try await URLSession.shared.data(from: downloadURL)
                 guard let image = UIImage(data: data) else {
-                    print("Failed to create UIImage from data")
                     throw NSError(domain: "Invalid image data", code: -1)
                 }
                 
@@ -149,17 +148,13 @@ struct ImageDetailsView: View {
                 }
                 
                 await MainActor.run {
-                    withAnimation {
-                        showSaveSuccess = true
-                    }
+                    withAnimation { showSaveSuccess = true }
                 }
                 
                 try await Task.sleep(nanoseconds: 2_500_000_000)
                 
                 await MainActor.run {
-                    withAnimation {
-                        showSaveSuccess = false
-                    }
+                    withAnimation { showSaveSuccess = false }
                 }
                 
             } catch {
