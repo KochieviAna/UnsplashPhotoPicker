@@ -17,4 +17,5 @@ protocol PhotoSearching {
 
 protocol PhotoDownloadTracking {
     func trackDownload(for photo: Photo) async throws -> URL
+    func getDownloadHistory() -> [DownloadHistory]
 }

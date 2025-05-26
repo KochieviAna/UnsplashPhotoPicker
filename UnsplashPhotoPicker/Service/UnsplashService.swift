@@ -6,8 +6,11 @@
 //
 
 import Foundation
+import SwiftUI
 
 final class UnsplashService: PhotoFetching, PhotoSearching, PhotoDownloadTracking {
+    @AppStorage("downloadHistory") private var downloadHistoryData: Data = Data()
+    
     private let baseURL = "https://api.unsplash.com"
     let accessKey: String
     
@@ -67,6 +70,19 @@ final class UnsplashService: PhotoFetching, PhotoSearching, PhotoDownloadTrackin
         return searchResponse.results
     }
     
+    private var downloadHistory: [DownloadHistory] {
+        get {
+            guard let decoded = try? JSONDecoder().decode([DownloadHistory].self, from: downloadHistoryData) else {
+                return []
+            }
+            return decoded
+        }
+        set {
+            guard let encoded = try? JSONEncoder().encode(newValue) else { return }
+            downloadHistoryData = encoded
+        }
+    }
+    
     func trackDownload(for photo: Photo) async throws -> URL {
         guard let url = URL(string: photo.links.downloadLocation) else {
             throw URLError(.badURL)
@@ -88,6 +104,18 @@ final class UnsplashService: PhotoFetching, PhotoSearching, PhotoDownloadTrackin
         
         let decoded = try JSONDecoder().decode(DownloadResponse.self, from: data)
         
+        let historyItem = DownloadHistory(
+            id: UUID().uuidString,
+            photoId: photo.id,
+            date: Date(),
+            photoURL: photo.urls.regular,
+            photographerName: photo.user.name
+        )
+        
+        var currentHistory = downloadHistory
+        currentHistory.insert(historyItem, at: 0)
+        downloadHistory = currentHistory
+        
         guard let downloadURL = URL(string: decoded.url) else {
             throw URLError(.badURL)
         }
@@ -95,4 +123,7 @@ final class UnsplashService: PhotoFetching, PhotoSearching, PhotoDownloadTrackin
         return downloadURL
     }
     
+    func getDownloadHistory() -> [DownloadHistory] {
+        return downloadHistory
+    }
 }
