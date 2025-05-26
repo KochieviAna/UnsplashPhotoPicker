@@ -7,12 +7,16 @@
 
 import SwiftUI
 
-class UnsplashPhotoPickerAppSettings: ObservableObject {
+final class UnsplashPhotoPickerAppSettings: ObservableObject {
     @AppStorage("isDarkMode") var isDarkMode: Bool = false
-    
+
     private let accessKey = "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA"
 
-    lazy var unsplashService: UnsplashServiceProtocol = {
+    private lazy var service: UnsplashService = {
         UnsplashService(accessKey: accessKey)
     }()
+
+    var photoFetcher: PhotoFetching { service }
+    var photoSearcher: PhotoSearching { service }
+    var photoDownloadTracker: PhotoDownloadTracking { service }
 }

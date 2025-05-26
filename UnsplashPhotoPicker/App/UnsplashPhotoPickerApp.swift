@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct UnsplashPhotoPickerApp: App {
-    @StateObject private var appSettings = UnsplashPhotoPickerAppSettings()
+    @StateObject var appSettings = UnsplashPhotoPickerAppSettings()
     
     var body: some Scene {
         WindowGroup {

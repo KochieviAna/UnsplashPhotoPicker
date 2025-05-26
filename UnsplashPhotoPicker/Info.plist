@@ -9,5 +9,12 @@
 		<string>Poppins-Medium.ttf</string>
 		<string>Poppins-Bold.ttf</string>
 	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>primaryBlack</string>
+		<key>UILaunchScreen</key>
+		<string></string>
+	</dict>
 </dict>
 </plist>

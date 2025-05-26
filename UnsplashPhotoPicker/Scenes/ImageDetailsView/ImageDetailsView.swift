@@ -6,44 +6,129 @@
 //
 
 import SwiftUI
+import Photos
 
 struct ImageDetailsView: View {
-    let height: CGFloat
+    @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     @Environment(\.dismiss) private var dismiss
     
+    let photo: Photo
+    
+    @State private var viewModel: ImageDetailsViewModel
+    
+    init(photo: Photo, appSettings: UnsplashPhotoPickerAppSettings) {
+        self.photo = photo
+        let service = appSettings.photoDownloadTracker as! UnsplashService
+        _viewModel = State(wrappedValue: ImageDetailsViewModel(
+            photoDownloadTracker: service,
+            unsplashService: service,
+            photo: photo
+        ))
+    }
+    
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Rectangle()
-                .fill(Color.gray.opacity(0.3))
-                .overlay(
-                    Image(systemName: "photo")
+        ZStack {
+            AsyncImage(url: URL(string: photo.urls.regular)) { phase in
+                switch phase {
+                case .empty:
+                    Color.primaryGrey.opacity(0.3)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .redacted(reason: .placeholder)
+                        .shimmering()
+                    
+                case .success(let image):
+                    image
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 100, height: 100)
-                        .foregroundColor(.gray)
-                )
-                .ignoresSafeArea()
-            
-            Button(action: {
-                dismiss()
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .padding(12)
-                    .clipShape(Circle())
-                    .shadow(radius: 4)
+                        .scaleEffect(viewModel.imageScale)
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { viewModel.updateImageScale(to: $0) }
+                                .onEnded { _ in viewModel.resetImageScaleWithAnimation() }
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                case .failure:
+                    Color.primaryGrey.opacity(0.3)
+                @unknown default:
+                    EmptyView()
+                }
             }
-            .padding(.top, 20)
-            .padding(.leading, 20)
+            .ignoresSafeArea()
+            
+            VStack {
+                HStack {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                    }
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        Button(action: { viewModel.toggleBookmark() }) {
+                            Image(systemName: viewModel.isBookmarked ? "bookmark.fill" : "bookmark")
+                                .font(.system(size: 24))
+                                .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                        }
+                        
+                        Button(action: {
+                            viewModel.downloadImageToPhotoLibrary(for: photo)
+                        }) {
+                            Image(systemName: "arrow.down.to.line")
+                                .font(.system(size: 24))
+                                .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 20)
+                
+                Spacer()
+                
+                HStack {
+                    Text(photo.user.name)
+                        .font(.poppinsBold(size: 20))
+                        .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                    Spacer()
+                }
+                .padding()
+            }
+            
+            if viewModel.showSaveSuccess {
+                VStack(spacing: 12) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                    
+                    Text("Photo saved")
+                        .font(.poppinsMedium(size: 18))
+                        .foregroundColor(appSettings.isDarkMode ? .white : .primaryBlack)
+                }
+                .padding(30)
+                .background(appSettings.isDarkMode ? .primaryBlack.opacity(0.75) : .white.opacity(0.75))
+                .cornerRadius(16)
+                .transition(.opacity)
+                .zIndex(1)
+            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        ImageDetailsView(height: 300)
+        .alert("Error Saving Photo", isPresented: $viewModel.showSaveErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.saveErrorMessage)
+        }
+        .onAppear {
+            if let tracker = appSettings.photoDownloadTracker as? UnsplashService,
+               tracker.accessKey.isEmpty {
+                viewModel = ImageDetailsViewModel(
+                    photoDownloadTracker: tracker,
+                    unsplashService: tracker,
+                    photo: photo
+                )
+            }
+        }
     }
 }
