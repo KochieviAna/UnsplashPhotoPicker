@@ -30,10 +30,10 @@ struct DownloadsView: View {
         VStack {
             Image(systemName: "arrow.down.circle")
                 .font(.system(size: 48))
-                .foregroundColor(.gray)
+                .foregroundColor(.primaryGrey)
             Text("No downloads yet")
                 .font(.poppinsMedium(size: 18))
-                .foregroundColor(.gray)
+                .foregroundColor(.primaryGrey)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -63,7 +63,7 @@ struct DownloadsView: View {
                     
                     Text(item.date.formatted(date: .abbreviated, time: .shortened))
                         .font(.poppinsRegular(size: 12))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.primaryGrey)
                 }
                 
                 Spacer()

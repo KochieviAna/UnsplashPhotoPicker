@@ -10,17 +10,17 @@ import SwiftUI
 struct HomeHeaherView: View {
     @EnvironmentObject var appSettings: UnsplashPhotoPickerAppSettings
     @State private var showDownloads = false
-
+    
     var body: some View {
         HStack {
             unsplashIconButton
-
+            
             Spacer()
-
+            
             unsplashText
-
+            
             Spacer()
-
+            
             downloadsButton
         }
         .background(Color(.systemBackground))
@@ -33,7 +33,7 @@ struct HomeHeaherView: View {
                 .presentationDragIndicator(.visible)
         }
     }
-
+    
     private var unsplashIconButton: some View {
         Button(action: {
             print("Unsplash button tapped")
@@ -44,12 +44,12 @@ struct HomeHeaherView: View {
         }
         .background(Color(.systemBackground))
     }
-
+    
     private var unsplashText: some View {
         Text("Unsplash")
             .font(.poppinsMedium(size: 24))
     }
-
+    
     private var downloadsButton: some View {
         Button(action: {
             if !showDownloads {
