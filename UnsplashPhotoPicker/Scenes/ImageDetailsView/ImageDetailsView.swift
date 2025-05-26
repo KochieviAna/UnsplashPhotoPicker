@@ -18,7 +18,8 @@ struct ImageDetailsView: View {
     
     init(photo: Photo) {
         self.photo = photo
-        _viewModel = State(wrappedValue: ImageDetailsViewModel(unsplashService: UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")))
+        let placeholderService = UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")
+        _viewModel = State(wrappedValue: ImageDetailsViewModel(photoDownloadTracker: placeholderService))
     }
     
     var body: some View {
@@ -114,6 +115,12 @@ struct ImageDetailsView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.saveErrorMessage)
+        }
+        .onAppear {
+            if let tracker = appSettings.photoDownloadTracker as? UnsplashService,
+               tracker.accessKey.isEmpty {
+                viewModel = ImageDetailsViewModel(photoDownloadTracker: appSettings.photoDownloadTracker)
+            }
         }
     }
 }

@@ -11,7 +11,8 @@ import SwiftUI
 @MainActor
 @Observable
 final class SearchViewModel: ObservableObject {
-    private var unsplashService: UnsplashServiceProtocol
+    private var photoFetcher: PhotoFetching
+    private var photoSearcher: PhotoSearching
     var shouldShowError = false
     var searchText: String = "" {
         didSet {
@@ -28,8 +29,9 @@ final class SearchViewModel: ObservableObject {
     private let perPage = 20
     private var searchTask: Task<Void, Never>? = nil
     
-    init(unsplashService: UnsplashServiceProtocol) {
-        self.unsplashService = unsplashService
+    init(photoFetcher: PhotoFetching, photoSearcher: PhotoSearching) {
+        self.photoFetcher = photoFetcher
+        self.photoSearcher = photoSearcher
     }
     
     func loadInitialPhotos() async {
@@ -39,7 +41,7 @@ final class SearchViewModel: ObservableObject {
         currentPage = 1
         
         do {
-            let results = try await unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
+            let results = try await photoFetcher.fetchPhotos(page: currentPage, perPage: perPage)
             photos = results
             currentPage += 1
             hasMorePages = !results.isEmpty
@@ -78,7 +80,7 @@ final class SearchViewModel: ObservableObject {
         loadFailed = false
         
         do {
-            let results = try await unsplashService.searchPhotos(query: searchText, page: currentPage, perPage: perPage)
+            let results = try await photoSearcher.searchPhotos(query: searchText, page: currentPage, perPage: perPage)
             if reset {
                 photos = results
             } else {
@@ -138,12 +140,17 @@ final class SearchViewModel: ObservableObject {
     }
     
     var unsplashServiceIsPlaceholder: Bool {
-        (unsplashService as? UnsplashService)?.accessKey.isEmpty == true
+        if let fetcher = photoFetcher as? UnsplashService,
+           let searcher = photoSearcher as? UnsplashService {
+            return fetcher.accessKey.isEmpty && searcher.accessKey.isEmpty
+        }
+        return false
     }
     
-    func setUnsplashService(_ service: UnsplashServiceProtocol) {
+    func setUnsplashServices(fetcher: PhotoFetching, searcher: PhotoSearching) {
         if unsplashServiceIsPlaceholder {
-            unsplashService = service
+            photoFetcher = fetcher
+            photoSearcher = searcher
         }
     }
 }

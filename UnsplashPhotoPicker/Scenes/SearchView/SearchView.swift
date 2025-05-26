@@ -12,7 +12,11 @@ struct SearchView: View {
     @StateObject private var viewModel: SearchViewModel
     
     init() {
-        _viewModel = StateObject(wrappedValue: SearchViewModel(unsplashService: UnsplashService(accessKey: "")))
+        let placeholderService = UnsplashService(accessKey: "")
+        _viewModel = StateObject(wrappedValue: SearchViewModel(
+            photoFetcher: placeholderService,
+            photoSearcher: placeholderService
+        ))
     }
     
     var body: some View {
@@ -125,7 +129,10 @@ struct SearchView: View {
     
     private func handleOnAppear() {
         if viewModel.unsplashServiceIsPlaceholder {
-            viewModel.setUnsplashService(appSettings.unsplashService)
+            viewModel.setUnsplashServices(
+                fetcher: appSettings.photoFetcher,
+                searcher: appSettings.photoSearcher
+            )
         }
         Task {
             await viewModel.loadInitialPhotos()
@@ -135,6 +142,7 @@ struct SearchView: View {
     private func photoCell(_ photo: Photo) -> some View {
         NavigationLink(destination: {
             ImageDetailsView(photo: photo)
+                .environmentObject(appSettings)
                 .navigationBarHidden(true)
         }) {
             let aspectRatio = CGFloat(photo.height) / CGFloat(photo.width)

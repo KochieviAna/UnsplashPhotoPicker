@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UnsplashService: UnsplashServiceProtocol {
+final class UnsplashService: PhotoFetching, PhotoSearching, PhotoDownloadTracking {
     private let baseURL = "https://api.unsplash.com"
     let accessKey: String
     

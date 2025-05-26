@@ -18,10 +18,10 @@ final class ImageDetailsViewModel {
     var saveErrorMessage = ""
     var isBookmarked = false
     
-    private let unsplashService: UnsplashServiceProtocol
+    private let photoDownloadTracker: PhotoDownloadTracking
     
-    init(unsplashService: UnsplashServiceProtocol) {
-        self.unsplashService = unsplashService
+    init(photoDownloadTracker: PhotoDownloadTracking) {
+        self.photoDownloadTracker = photoDownloadTracker
     }
     
     func toggleBookmark() {
@@ -41,7 +41,7 @@ final class ImageDetailsViewModel {
     func downloadImageToPhotoLibrary(for photo: Photo) {
         Task {
             do {
-                let downloadURL = try await unsplashService.trackDownload(for: photo)
+                let downloadURL = try await photoDownloadTracker.trackDownload(for: photo)
                 let (data, _) = try await URLSession.shared.data(from: downloadURL)
                 guard let image = UIImage(data: data) else {
                     throw NSError(domain: "Invalid image data", code: -1)

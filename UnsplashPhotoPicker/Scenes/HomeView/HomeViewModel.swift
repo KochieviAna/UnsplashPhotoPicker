@@ -12,7 +12,7 @@ import Observation
 @MainActor
 @Observable
 final class HomeViewModel: ObservableObject {
-    private(set) var unsplashService: UnsplashServiceProtocol
+    private var photoFetcher: PhotoFetching
     private var serviceWasSet = false
     
     var photos: [Photo] = []
@@ -24,17 +24,20 @@ final class HomeViewModel: ObservableObject {
     
     private let perPage = 20
     
-    init(unsplashService: UnsplashServiceProtocol) {
-        self.unsplashService = unsplashService
+    init(photoFetcher: PhotoFetching) {
+        self.photoFetcher = photoFetcher
     }
     
     var unsplashServiceIsPlaceholder: Bool {
-        (unsplashService as? UnsplashService)?.accessKey.isEmpty == true
+        if let fetcher = photoFetcher as? UnsplashService {
+            return fetcher.accessKey.isEmpty
+        }
+        return false
     }
     
-    func setUnsplashService(_ service: UnsplashServiceProtocol) {
+    func setPhotoFetcher(_ fetcher: PhotoFetching) {
         guard !serviceWasSet else { return }
-        self.unsplashService = service
+        self.photoFetcher = fetcher
         self.serviceWasSet = true
     }
     
@@ -45,7 +48,7 @@ final class HomeViewModel: ObservableObject {
         
         Task {
             do {
-                let newPhotos = try await unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
+                let newPhotos = try await photoFetcher.fetchPhotos(page: currentPage, perPage: perPage)
                 if newPhotos.isEmpty {
                     hasMorePages = false
                 } else {
@@ -68,7 +71,7 @@ final class HomeViewModel: ObservableObject {
         failedPhotoIDs = []
         
         do {
-            let newPhotos = try await unsplashService.fetchPhotos(page: currentPage, perPage: perPage)
+            let newPhotos = try await photoFetcher.fetchPhotos(page: currentPage, perPage: perPage)
             photos = newPhotos
             currentPage += 1
         } catch {

@@ -14,7 +14,8 @@ struct HomeView: View {
     private let columns = [GridItem(.flexible())]
     
     init() {
-        _viewModel = StateObject(wrappedValue: HomeViewModel(unsplashService: UnsplashService(accessKey: "")))
+        let placeholderService = UnsplashService(accessKey: "")
+        _viewModel = StateObject(wrappedValue: HomeViewModel(photoFetcher: placeholderService))
     }
     
     var body: some View {
@@ -90,7 +91,7 @@ struct HomeView: View {
     
     private func handleOnAppear() {
         if viewModel.unsplashServiceIsPlaceholder {
-            viewModel.setUnsplashService(appSettings.unsplashService)
+            viewModel.setPhotoFetcher(appSettings.photoFetcher)
             viewModel.loadNextPage()
         }
     }
