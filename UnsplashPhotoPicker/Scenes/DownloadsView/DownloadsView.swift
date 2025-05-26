@@ -47,9 +47,13 @@ struct DownloadsView: View {
                             .resizable()
                             .scaledToFill()
                     } else if phase.error != nil {
-                        Color.gray
+                        Color.primaryGrey
                     } else {
-                        ProgressView()
+                        Color.gray.opacity(0.3)
+                            .frame(width: 60, height: 60)
+                            .cornerRadius(8)
+                            .redacted(reason: .placeholder)
+                            .shimmering()
                     }
                 }
                 .frame(width: 60, height: 60)

@@ -97,7 +97,7 @@ struct HomeView: View {
     }
     
     private func photoCell(_ photo: Photo) -> some View {
-        NavigationLink(destination: ImageDetailsView(photo: photo)) {
+        NavigationLink(destination: ImageDetailsView(photo: photo, appSettings: appSettings)) {
             ZStack(alignment: .bottomLeading) {
                 AsyncImage(url: URL(string: photo.urls.regular)) { phase in
                     switch phase {

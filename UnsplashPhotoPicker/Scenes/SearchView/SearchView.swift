@@ -141,7 +141,7 @@ struct SearchView: View {
     
     private func photoCell(_ photo: Photo) -> some View {
         NavigationLink(destination: {
-            ImageDetailsView(photo: photo)
+            ImageDetailsView(photo: photo, appSettings: appSettings)
                 .environmentObject(appSettings)
                 .navigationBarHidden(true)
         }) {

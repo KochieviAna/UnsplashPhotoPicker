@@ -19,13 +19,19 @@ final class ImageDetailsViewModel {
     var isBookmarked = false
     
     private let photoDownloadTracker: PhotoDownloadTracking
+    private let unsplashService: UnsplashService
+    private let photo: Photo
     
-    init(photoDownloadTracker: PhotoDownloadTracking) {
+    init(photoDownloadTracker: PhotoDownloadTracking, unsplashService: UnsplashService, photo: Photo) {
         self.photoDownloadTracker = photoDownloadTracker
+        self.unsplashService = unsplashService
+        self.photo = photo
+        self.isBookmarked = unsplashService.isPhotoBookmarked(photo)
     }
     
     func toggleBookmark() {
-        isBookmarked.toggle()
+        unsplashService.toggleBookmark(for: photo)
+        isBookmarked = unsplashService.isPhotoBookmarked(photo)
     }
     
     func resetImageScaleWithAnimation() {

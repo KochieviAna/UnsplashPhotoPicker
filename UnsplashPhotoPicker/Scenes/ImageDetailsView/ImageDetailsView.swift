@@ -16,10 +16,14 @@ struct ImageDetailsView: View {
     
     @State private var viewModel: ImageDetailsViewModel
     
-    init(photo: Photo) {
+    init(photo: Photo, appSettings: UnsplashPhotoPickerAppSettings) {
         self.photo = photo
-        let placeholderService = UnsplashService(accessKey: "_V60u3Frokty_NCzK83YlKGIj1HIfwLzqciub6nlYHA")
-        _viewModel = State(wrappedValue: ImageDetailsViewModel(photoDownloadTracker: placeholderService))
+        let service = appSettings.photoDownloadTracker as! UnsplashService
+        _viewModel = State(wrappedValue: ImageDetailsViewModel(
+            photoDownloadTracker: service,
+            unsplashService: service,
+            photo: photo
+        ))
     }
     
     var body: some View {
@@ -119,7 +123,11 @@ struct ImageDetailsView: View {
         .onAppear {
             if let tracker = appSettings.photoDownloadTracker as? UnsplashService,
                tracker.accessKey.isEmpty {
-                viewModel = ImageDetailsViewModel(photoDownloadTracker: appSettings.photoDownloadTracker)
+                viewModel = ImageDetailsViewModel(
+                    photoDownloadTracker: tracker,
+                    unsplashService: tracker,
+                    photo: photo
+                )
             }
         }
     }
