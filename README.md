@@ -1,4 +1,4 @@
-![simulator_screenshot_8AECE4BC-1E26-4429-BCE9-211337D9EEB3](https://github.com/user-attachments/assets/21fa7262-e3a6-4f73-b701-7d0f0f50d662)# Unsplash Photo Picker
+# Unsplash Photo Picker
 
 A modern iOS photo browsing app built with **SwiftUI**, designed to let users explore and search high-quality photos using the **Unsplash API**. Users can browse photos, perform keyword searches, view detailed image information, and bookmark/download their favorite shots.
 
@@ -40,14 +40,14 @@ A modern iOS photo browsing app built with **SwiftUI**, designed to let users ex
 
 ## Screenshots
 
-  <img src="https://github.com/user-attachments/assets/e7cbdac4-9aaf-4dfb-83cd-1a9ae6250c41" width="300"/>
-  <img src="https://github.com/user-attachments/assets/f6dc2825-bbe3-49db-9da6-6e954d4bb793" width="300"/>
-  <img src="https://github.com/user-attachments/assets/9fa46540-a4f4-4ee3-bf69-e33c0a1b22c2" width="300"/>
-  <img src="https://github.com/user-attachments/assets/ecbdcb86-ff4c-40e5-9dde-381e3c17ad88" width="300"/>
-  <img src="https://github.com/user-attachments/assets/4e9de61b-c630-4ad7-94f5-d2720b338a44" width="300"/>
-  <img src="https://github.com/user-attachments/assets/bbf21bc3-ecd1-43de-944c-1858bd74ecb5" width="300"/>
-  <img src="https://github.com/user-attachments/assets/a3eb0e03-2a91-44dc-93b1-fba162b2d866" width="300"/>
-  <img src="https://github.com/user-attachments/assets/324ea753-654f-4fa1-b5ab-716f8d1bc77e" width="300"/>
+  <img src="https://github.com/user-attachments/assets/e7cbdac4-9aaf-4dfb-83cd-1a9ae6250c41" width="200"/>
+  <img src="https://github.com/user-attachments/assets/f6dc2825-bbe3-49db-9da6-6e954d4bb793" width="200"/>
+  <img src="https://github.com/user-attachments/assets/9fa46540-a4f4-4ee3-bf69-e33c0a1b22c2" width="200"/>
+  <img src="https://github.com/user-attachments/assets/ecbdcb86-ff4c-40e5-9dde-381e3c17ad88" width="200"/>
+  <img src="https://github.com/user-attachments/assets/4e9de61b-c630-4ad7-94f5-d2720b338a44" width="200"/>
+  <img src="https://github.com/user-attachments/assets/bbf21bc3-ecd1-43de-944c-1858bd74ecb5" width="200"/>
+  <img src="https://github.com/user-attachments/assets/a3eb0e03-2a91-44dc-93b1-fba162b2d866" width="200"/>
+  <img src="https://github.com/user-attachments/assets/324ea753-654f-4fa1-b5ab-716f8d1bc77e" width="200"/>
 
 ---
 
